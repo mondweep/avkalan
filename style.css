@@ -1,0 +1,246 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+header {
+    background-color: #004b87; /* Alps blue */
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+nav button.tab-button {
+    background-color: #005f9e;
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+nav button.tab-button:hover {
+    background-color: #007bb5;
+}
+
+nav button.tab-button.active {
+    background-color: #e84e0f; /* Alps orange */
+    font-weight: bold;
+}
+
+main {
+    padding: 2rem;
+}
+
+.tab-content {
+    display: none; /* Hidden by default */
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-top: 1rem;
+}
+
+.tab-content.active {
+    display: block; /* Show active tab */
+}
+
+.controls {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.controls label {
+    font-weight: bold;
+    margin-right: 0.5rem;
+}
+
+.controls select,
+.controls input[type="number"],
+.controls button {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.controls button {
+    background-color: #e84e0f; /* Alps orange */
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.controls button:hover {
+    background-color: #d1450c;
+}
+
+h2 {
+    color: #004b87;
+    margin-top: 0;
+    border-bottom: 2px solid #e84e0f;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+h3 {
+    color: #005f9e;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 0.8rem;
+    text-align: left;
+}
+
+th {
+    background-color: #e9ecef;
+    font-weight: bold;
+    color: #495057;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+#intervention-output p,
+#prediction-output div,
+#dashboard-output div,
+#benchmarking-output div {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+#subject-risk-summary div,
+#benchmark-summary div {
+    margin-bottom: 0.5rem;
+}
+
+#subject-risk-summary strong,
+#benchmark-summary strong {
+    display: inline-block;
+    min-width: 200px; /* Adjust as needed */
+}
+
+.risk-high { color: red; font-weight: bold; }
+.risk-medium { color: orange; }
+.risk-low { color: green; }
+
+.trend-up { color: green; }
+.trend-down { color: red; }
+.trend-stable { color: grey; }
+
+#download-tracker {
+    margin-bottom: 1rem;
+    float: right;
+}
+
+/* Chat Interface Styles */
+.chat-container {
+    margin-top: 2rem;
+    border-top: 1px solid #eee;
+    padding-top: 1.5rem;
+}
+
+.chat-messages {
+    height: 250px; /* Adjust as needed */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background-color: #f9f9f9;
+}
+
+.chat-messages div {
+    margin-bottom: 0.8rem;
+    line-height: 1.4;
+}
+
+.chat-messages .user-message {
+    text-align: right;
+    color: #005f9e; /* User message color */
+}
+.chat-messages .user-message strong {
+    color: #004b87;
+}
+
+
+.chat-messages .ai-message {
+    text-align: left;
+    color: #333; /* AI message color */
+    background-color: #e9ecef; /* Slightly different background for AI */
+    padding: 0.5rem 0.8rem;
+    border-radius: 4px;
+    display: inline-block; /* Prevent full width */
+    max-width: 85%;
+}
+.chat-messages .ai-message strong {
+    color: #e84e0f;
+}
+.chat-messages .error-message {
+    color: red;
+    font-style: italic;
+}
+
+
+.chat-input-area {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chat-input-area input[type="text"] {
+    flex-grow: 1; /* Take remaining space */
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.chat-input-area button {
+    padding: 0.6rem 1rem;
+    background-color: #007bb5; /* Slightly different blue for send */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.chat-input-area button:hover {
+    background-color: #005f9e;
+}

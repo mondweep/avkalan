@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alps Education AI Prototype</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google AI SDK -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Alps Education AI Prototype</h1>
+        <nav>
+            <button class="tab-button active" data-tab="intervention">Student Intervention</button>
+            <button class="tab-button" data-tab="prediction">Exam Prediction</button>
+            <button class="tab-button" data-tab="dashboard">Teacher Dashboard</button>
+            <button class="tab-button" data-tab="benchmarking">School Benchmarking</button>
+        </nav>
+    </header>
+
+    <main id="content">
+        <!-- Content will be loaded here by JavaScript -->
+        <section id="intervention" class="tab-content active">
+            <h2>AI-Driven Student Performance Prediction & Intervention</h2>
+            <div class="controls">
+                <label for="subject-select-intervention">Select Subject:</label>
+                <select id="subject-select-intervention">
+                    <!-- Options added by JS -->
+                </select>
+                <label for="target-alps-grade">Target Alps Grade:</label>
+                <input type="number" id="target-alps-grade" value="3" min="1" max="9">
+                <button id="analyze-intervention">Analyze & Suggest</button>
+            </div>
+            <div id="intervention-output">
+                <p id="target-gap-analysis"></p>
+                <h3>Prioritized Student List</h3>
+                <button id="download-tracker">Download Intervention Tracker (CSV)</button>
+                <table id="student-intervention-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Current Predicted Grade</th>
+                            <th>Target Grade (Min)</th>
+                            <th>Gap</th>
+                            <th>Suggested Priority</th>
+                            <th>Suggested Interventions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows added by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <!-- Chat Interface for Intervention -->
+            <div class="chat-container">
+                <h3>Chat about Intervention Data</h3>
+                <div class="chat-messages" id="chat-messages-intervention"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input-intervention" placeholder="Ask about these students...">
+                    <button class="chat-send-button" data-tab="intervention">Send</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="prediction" class="tab-content">
+            <h2>Predictive Analytics for Exam Performance</h2>
+            <div class="controls">
+                <label for="exam-level-select">Select Level:</label>
+                <select id="exam-level-select">
+                    <option value="GCSE">GCSE</option>
+                    <option value="A-Level">A-Level</option>
+                </select>
+                 <button id="run-prediction">Run Predictive Analysis</button>
+            </div>
+             <div id="prediction-output">
+                 <h3>Risk Assessment Summary</h3>
+                 <div id="subject-risk-summary">
+                     <!-- Summary added by JS -->
+                 </div>
+                 <h3>Subject Deep Dive</h3>
+                 <div id="subject-deep-dive">
+                    <!-- Details added by JS -->
+                 </div>
+             </div>
+             <!-- Chat Interface for Prediction -->
+            <div class="chat-container">
+                <h3>Chat about Prediction Data</h3>
+                <div class="chat-messages" id="chat-messages-prediction"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input-prediction" placeholder="Ask about subject risks...">
+                    <button class="chat-send-button" data-tab="prediction">Send</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="dashboard" class="tab-content">
+            <h2>Smart Teacher Dashboard</h2>
+             <div class="controls">
+                 <label for="teacher-select">Select Teacher:</label>
+                 <select id="teacher-select">
+                     <option value="teacher1">Ms. Evans (Science)</option>
+                     <option value="teacher2">Mr. Jones (Maths)</option>
+                 </select>
+                 <label for="class-select">Select Class:</label>
+                 <select id="class-select">
+                     <option value="classA">Year 9 - Set 1 Science</option>
+                     <option value="classB">Year 10 - Maths Group 2</option>
+                 </select>
+                 <button id="load-dashboard">Load Dashboard</button>
+             </div>
+             <div id="dashboard-output">
+                 <h3>Class Performance Snapshot</h3>
+                 <div id="class-performance-snapshot"></div>
+                 <h3>Students Requiring Attention</h3>
+                 <table id="dashboard-students-attention">
+                     <thead>
+                         <tr>
+                             <th>Student Name</th>
+                             <th>Reason</th>
+                             <th>Suggested Action</th>
+                         </tr>
+                     </thead>
+                     <tbody></tbody>
+                 </table>
+                 <h3>Engagement Indicators (Simulated)</h3>
+                 <div id="class-engagement-indicators"></div>
+             </div>
+             <!-- Chat Interface for Dashboard -->
+            <div class="chat-container">
+                <h3>Chat about Dashboard Data</h3>
+                <div class="chat-messages" id="chat-messages-dashboard"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input-dashboard" placeholder="Ask about this class/teacher...">
+                    <button class="chat-send-button" data-tab="dashboard">Send</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="benchmarking" class="tab-content">
+            <h2>AI-Driven School Benchmarking & Performance Analysis</h2>
+            <div class="controls">
+                 <label for="benchmark-years">Select Timeframe:</label>
+                 <select id="benchmark-years">
+                     <option value="4">Last 4 Academic Years</option>
+                     <option value="3">Last 3 Academic Years</option>
+                     <option value="2">Last 2 Academic Years</option>
+                 </select>
+                 <button id="run-benchmarking">Generate Executive Summary</button>
+            </div>
+            <div id="benchmarking-output">
+                <h3>Strategic Executive Summary</h3>
+                <div id="benchmark-summary"></div>
+                <h3>Benchmarking Comparison (Placeholder Data)</h3>
+                <div id="benchmark-comparison"></div>
+                 <h3>Key Insights & Recommendations</h3>
+                <div id="benchmark-recommendations"></div>
+            </div>
+             <!-- Chat Interface for Benchmarking -->
+            <div class="chat-container">
+                <h3>Chat about Benchmarking Data</h3>
+                <div class="chat-messages" id="chat-messages-benchmarking"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input-benchmarking" placeholder="Ask about school trends...">
+                    <button class="chat-send-button" data-tab="benchmarking">Send</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
