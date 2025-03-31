@@ -86,22 +86,18 @@ A robust, scalable, and secure production architecture would look significantly 
 *   **Hosting Platform:** A major cloud provider (AWS, Azure, GCP) offering managed services for databases, compute, storage, networking, and security.
 
 ```mermaid
-graph TD
-    A[User Browser] -- HTTPS --> B(Load Balancer / CDN);
-    B --> C{Frontend (React/Vue/Angular)};
-    C -- API Calls (HTTPS) --> D[API Gateway];
-    D --> E{Backend API Service(s) (Node/Python/Go)};
-    E -- AuthN/AuthZ --> F[Auth Service (Cognito/Auth0/Azure AD)];
-    E -- CRUD Ops --> G[Database (PostgreSQL/RDS)];
-    E -- Async Task --> H{Task Queue (SQS/RabbitMQ)};
-    H --> I[Data Processing / AI Engine (Python)];
-    I --> G;
-    I -- Secure Call via Backend --> J{External AI API (Gemini)};
-    J -- Response --> I;
-    subgraph Cloud Platform (AWS/Azure/GCP)
-        direction LR
-        B; C; D; E; F; G; H; I;
-    end
+graph TD 
+    A(User Browser) -- HTTPS --> B(Load Balancer); 
+    B --> C(Frontend React/Vue); 
+    C -- API Calls --> D[API Gateway]; 
+    D --> E(Backend API - Node/Python); 
+    E -- Auth --> F(Auth Service-Cognito/Auth0); 
+    E --> G(Database-PostgreSQL/RDS); 
+    E -- Async Task --> H(Task Queue -SQS/RabbitMQ); 
+    H --> I(Data Processing/AI Engine -Python); 
+    I --> G; 
+    I -- Secure Call --> J(External AI API -Gemini); 
+    J -- Response --> I; 
 ```
 
 ## Ethical Guardrails (EU AI Act - High-Risk Considerations)
