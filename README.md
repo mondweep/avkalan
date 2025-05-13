@@ -4,7 +4,7 @@
 
 This project is a functional web prototype demonstrating potential AI-powered capabilities for the Alps Education platform, inspired by Alps Connect and related use cases. It aims to showcase how AI can provide actionable insights for school leaders and teachers regarding student performance, predictions, benchmarking, and data exploration via a chat interface.
 
-**Note:** This is a prototype using mock data and simulated analyses. The AI chat feature uses a real API key embedded directly in the frontend code, which is **highly insecure** and done for demonstration purposes only.
+**Note:** This is a prototype using mock data and simulated analyses. The AI chat feature now fetches the API key securely from a local backend server (Flask), which loads the key from a `.env` file. **Never hardcode API keys in frontend code or commit them to version control.**
 
 ## Requirements Demonstrated
 
@@ -30,7 +30,7 @@ The requirements are demonstrated in the corresponding tabs of the web interface
 
 *   **Mock Data:** All student data (names, subjects, grades, scores, engagement metrics, ALPS grades/scores) is randomly generated within `script.js` for demonstration. It does not represent real individuals or performance. ALPS calculations are highly simplified placeholders.
 *   **Simulated Analysis:** The core analyses (gap analysis, risk assessment, trends, benchmarking comparisons) use simplified placeholder logic in JavaScript. They are illustrative and not based on validated educational models or real ALPS algorithms.
-*   **API Key Security:** The Google Gemini API key is embedded directly in the frontend JavaScript (`script.js`). **This is insecure and unsuitable for any shared or production environment.** In a real application, API keys must be handled securely via a backend server.
+*   **API Key Security:** The Google Gemini API key is now loaded securely from a backend Flask server and never hardcoded in the frontend. **This is the recommended approach for any real or shared environment.**
 *   **Local Server Environment:** The prototype requires being served via a local web server (e.g., `python3 -m http.server 8000` or `npx http-server -p 8000`) because browsers restrict loading JavaScript modules (`type="module"`) from local `file:///` paths due to CORS policy.
 *   **LLM Context & Prompting:** The context provided to the Gemini model is a basic summary of the mock data and currently displayed UI elements. Production systems would need more sophisticated context generation and prompt engineering for optimal results. Formatting requests (like using tables) are best-effort suggestions to the LLM.
 
@@ -179,6 +179,41 @@ This outlines a potential roadmap for developing a production-ready version:
     *   *OKRs:* Successfully serve 500+ schools with target performance SLAs (<500ms API response P95); Reduce infrastructure cost per active user by 10% through optimization; Implement and document AI explainability for key predictions; Demonstrate compliance with relevant sections of EU AI Act (via internal audit).
     *   *Team Structure:* Strengthen DevOps/SRE team (2+), potentially add more Data Scientists/ML Engineers, consider dedicated Security Engineer.
     *   *Skills Needed:* + Performance Optimization (DB indexing, caching, load testing), Advanced Cloud Architecture (scaling, resilience), Observability Tools (Datadog, Grafana, etc.), MLOps, AI Ethics & Explainability Techniques, Advanced Security Practices.
+
+## Backend API Key Management (New)
+
+To securely manage the Google Gemini API key, a minimal Flask backend is provided. The backend reads the API key from a `.env` file and exposes it via a `/api-key` endpoint. The frontend fetches the key at runtime and never exposes it in the codebase or version control.
+
+### Setup Instructions
+
+1. **Create a `.env` file in your project root:**
+   ```
+   GOOGLE_GENAI_API_KEY=your_actual_api_key_here
+   ```
+   (This file is already in `.gitignore` and will not be committed.)
+
+2. **Install backend dependencies:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. **Run the backend server:**
+   ```bash
+   python backend.py
+   ```
+   The backend will be available at `http://localhost:5000/api-key`.
+
+4. **Run the frontend as usual (e.g., with a static server):**
+   ```bash
+   python3 -m http.server 8000
+   # or
+   npx http-server -p 8000
+   ```
+
+5. **The frontend will fetch the API key from the backend and use it to initialize the Gemini AI SDK.**
+
 # avkalan
 
 Here is the conceptual demonstration of AI-powered capabilities for Alps Education:

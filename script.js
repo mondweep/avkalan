@@ -1,9 +1,26 @@
 // Import the Google AI SDK
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-document.addEventListener('DOMContentLoaded', () => {
+async function fetchApiKey() {
+    try {
+        const response = await fetch("http://localhost:5050/api-key");
+        const data = await response.json();
+        if (data.apiKey) {
+            return data.apiKey;
+        } else {
+            throw new Error(data.error || "API key not found");
+        }
+    } catch (error) {
+        console.error("Failed to fetch API key:", error);
+        alert("Failed to fetch API key from backend. Please check backend server.");
+        return null;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
     // --- Configuration ---
-    const API_KEY = "AIzaSyAaPUP17X9dHk7mE_-w4bu9DevOVrCVe08"; // WARNING: Storing API keys client-side is insecure!
+    const API_KEY = await fetchApiKey();
+    if (!API_KEY) return;
 
     // --- Initialize Google AI ---
     let genAI;
@@ -140,6 +157,72 @@ document.addEventListener('DOMContentLoaded', () => {
         return "Extension activities; University-style problems; Independent research project guidance."; // A*, A
     }
 
+    // --- CSV Import Functionality ---
+    let importedStudents = null; // Will hold parsed students if CSV is uploaded
+    const fileInput = document.querySelector('input[type="file"]');
+
+    // Helper: Parse CSV row to student object (assumes exported format)
+    function csvRowToStudent(row) {
+        // Expecting: Student Name,Current Predicted Grade,Target Grade (Min),Gap,Suggested Priority,Suggested Interventions
+        const [name, predictedGrade, targetGrade] = row;
+        if (!name) return null;
+        const [firstName, ...lastNameParts] = name.split(' ');
+        return {
+            id: `imported_${name.replace(/\s+/g, '_')}`,
+            firstName: firstName || '',
+            lastName: lastNameParts.join(' ') || '',
+            yearGroup: 11, // Default, or parse from extra columns if present
+            subjects: {
+                // We'll use a single subject for imported data, as subject is selected in UI
+                [subjectSelectIntervention.value]: {
+                    '2023/2024': {
+                        predictedGrade: predictedGrade || '',
+                        targetGrade: targetGrade || '',
+                        mockExamScore: '',
+                        assessments: [],
+                        alpsGrade: 5, // Placeholder
+                        alpsScore: ''
+                    }
+                }
+            },
+            engagement: {
+                homeworkCompletion: 1,
+                onlineParticipation: 1,
+                attendance: 1
+            }
+        };
+    }
+
+    // Use PapaParse for robust CSV parsing (add via CDN if not present)
+    function handleCSVImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const csv = e.target.result;
+            // Use PapaParse if available, else fallback to simple split
+            if (window.Papa) {
+                const parsed = Papa.parse(csv, { skipEmptyLines: true });
+                const rows = parsed.data;
+                // Skip header row, map to students
+                importedStudents = rows.slice(1).map(csvRowToStudent).filter(Boolean);
+            } else {
+                // Simple fallback: split by lines/commas
+                const rows = csv.split('\n').map(line => line.split(','));
+                importedStudents = rows.slice(1).map(csvRowToStudent).filter(Boolean);
+            }
+            // Re-run analysis with imported data
+            calculateIntervention();
+        };
+        reader.readAsText(file);
+    }
+    if (fileInput) fileInput.addEventListener('change', handleCSVImport);
+
+    // Helper to get current students (imported or mock)
+    function getCurrentStudents() {
+        return importedStudents && importedStudents.length > 0 ? importedStudents : mockStudents;
+    }
+
     function calculateIntervention() {
         const selectedSubject = subjectSelectIntervention.value;
         const targetAlpsGrade = parseInt(targetAlpsGradeInput.value); // Target for the *department*
@@ -148,7 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Simulate calculating current Alps grade (very simplified)
         let currentAlpsSum = 0;
         let studentCount = 0;
-        mockStudents.forEach(s => {
+        getCurrentStudents().forEach(s => {
              if (s.subjects[selectedSubject] && s.subjects[selectedSubject][currentAcademicYear]) {
                  currentAlpsSum += s.subjects[selectedSubject][currentAcademicYear].alpsGrade;
                  studentCount++;
@@ -158,10 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Simulate how many need to improve (highly simplified placeholder logic)
         const studentsNeeded = Math.max(0, Math.ceil(studentCount * (currentAlpsGrade - targetAlpsGrade) * 0.15)); // Placeholder factor
-        targetGapAnalysisP.textContent = `Current simulated Alps Grade for ${selectedSubject}: ${currentAlpsGrade}. To reach target grade ${targetAlpsGrade}, analysis suggests ${studentsNeeded} students need to improve by at least one grade.`;
+        targetGapAnalysisP.textContent = `Current simulated Alpha Grade for ${selectedSubject}: ${currentAlpsGrade}. To reach target grade ${targetAlpsGrade}, analysis suggests ${studentsNeeded} students need to improve by at least one grade.`;
 
         // Filter and sort students for the table
-        const relevantStudents = mockStudents
+        const relevantStudents = getCurrentStudents()
             .filter(s => s.subjects[selectedSubject] && s.subjects[selectedSubject][currentAcademicYear])
             .map(s => {
                 const subjectData = s.subjects[selectedSubject][currentAcademicYear];
@@ -299,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const subjectPerformance = {}; // { subjectName: { totalScore: X, count: Y, trends: [], underperforming: Z } }
 
-        mockStudents.forEach(student => {
+        getCurrentStudents().forEach(student => {
             const studentYear = student.yearGroup;
             // Basic level filtering
             if ((selectedLevel === 'GCSE' && studentYear > 11) || (selectedLevel === 'A-Level' && studentYear < 12)) {
@@ -410,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let totalHomework = 0;
         let totalParticipation = 0;
 
-        mockStudents.forEach(student => {
+        getCurrentStudents().forEach(student => {
             // Simple check if student *could* be in this class (based on year)
             // A real system would have explicit class lists
             if (student.yearGroup !== selectedClassInfo.yearGroup) return;
@@ -523,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         academicYears.forEach(year => {
             yearlySubjectPerformance[year] = {};
-            mockStudents.forEach(student => {
+            getCurrentStudents().forEach(student => {
                 Object.keys(student.subjects).forEach(subjectName => {
                     const yearData = student.subjects[subjectName]?.[year];
                     if (yearData) {
@@ -608,7 +691,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Display Summary
         benchmarkSummaryDiv.innerHTML = `
-            <p><strong>Overall School Trend (${numYears} Years):</strong> ${overallTrend <= 0 ? 'Stable or Improving' : 'Declining'} (Simulated Alps Grade change: ${overallTrend.toFixed(1)})</p>
+            <p><strong>Overall School Trend (${numYears} Years):</strong> ${overallTrend <= 0 ? 'Stable or Improving' : 'Declining'} (Simulated Alpha Grade change: ${overallTrend.toFixed(1)})</p>
             <p><strong>Subjects Performing Consistently Well:</strong> ${performingWell.join(', ') || 'None identified'}</p>
             <p><strong>Subjects Maintaining Performance:</strong> ${maintaining.join(', ') || 'None identified'}</p>
             <p><strong>Subjects Requiring Strategic Attention:</strong> ${strategicAttention.join(', ') || 'None identified'}</p>
@@ -618,7 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const percentile = 50 + Math.round((nationalAvgAlps - lastYearOverallAlps) * 15); // Very rough simulation
         benchmarkComparisonDiv.innerHTML = `
             <p>Overall performance places school in approx. <strong>${Math.max(10, Math.min(90, percentile))}th percentile</strong> nationally (simulated).</p>
-            <p>Average Alps Score vs National: ${(Object.values(subjectTrends).reduce((sum, s) => sum + s.avgScore, 0) / Object.keys(subjectTrends).length - nationalAvgScore).toFixed(2)} (simulated difference)</p>
+            <p>Average Alpha Score vs National: ${(Object.values(subjectTrends).reduce((sum, s) => sum + s.avgScore, 0) / Object.keys(subjectTrends).length - nationalAvgScore).toFixed(2)} (simulated difference)</p>
         `;
 
         // Display Recommendations
@@ -675,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.disabled = true; // Prevent multiple sends while waiting
 
         // Prepare context based on the active tab
-        let contextPrompt = `You are an AI assistant for Alps Education, analyzing school performance data. `;
+        let contextPrompt = `You are an AI assistant for Alpha Education, analyzing school performance data. `;
         let relevantDataSummary = "";
 
         // --- Generate Context Summary (Crucial for LLM) ---
@@ -684,19 +767,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // This part can be significantly improved for better AI responses.
 
         const currentAcademicYear = "2023/2024"; // Consistent assumption
-        const activeStudents = mockStudents.slice(0, 20); // Limit data sent for brevity in this example
+        const activeStudents = getCurrentStudents().slice(0, 20); // Limit data sent for brevity in this example
 
-        relevantDataSummary = `Context: Analyzing data for ${mockStudents.length} students. Focus on the ${currentAcademicYear} academic year. Key subjects include ${subjects.slice(0,5).join(', ')} etc. Grades range from A* (best) to U (worst). Alps grades range from 1 (best) to 9 (worst).\n\n`;
+        relevantDataSummary = `Context: Analyzing data for ${getCurrentStudents().length} students. Focus on the ${currentAcademicYear} academic year. Key subjects include ${subjects.slice(0,5).join(', ')} etc. Grades range from A* (best) to U (worst). Alpha grades range from 1 (best) to 9 (worst).\n\n`;
 
         try {
             if (tabId === 'intervention') {
                 const selectedSubject = subjectSelectIntervention.value;
                 const targetGrade = targetAlpsGradeInput.value;
                 const studentsInTable = Array.from(interventionOutputTableBody.querySelectorAll('tr')).map(row => row.cells[0].textContent);
-                contextPrompt += `The user is viewing the 'Student Intervention' tab for ${selectedSubject}, aiming for Alps grade ${targetGrade}. `;
+                contextPrompt += `The user is viewing the 'Student Intervention' tab for ${selectedSubject}, aiming for Alpha grade ${targetGrade}. `;
                 relevantDataSummary += `Currently displayed students needing intervention: ${studentsInTable.join(', ') || 'None'}. \n`;
                 // Add summary of a few relevant students from mock data
-                 relevantDataSummary += `Sample student data (up to 5 relevant): \n` + mockStudents
+                 relevantDataSummary += `Sample student data (up to 5 relevant): \n` + getCurrentStudents()
                     .filter(s => s.subjects[selectedSubject]?.[currentAcademicYear] && getGradeValue(s.subjects[selectedSubject][currentAcademicYear].predictedGrade) > getGradeValue(s.subjects[selectedSubject][currentAcademicYear].targetGrade))
                     .slice(0, 5)
                     .map(s => `- ${s.firstName} ${s.lastName}: Predicted ${s.subjects[selectedSubject][currentAcademicYear].predictedGrade}, Target ${s.subjects[selectedSubject][currentAcademicYear].targetGrade}`)
@@ -724,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 relevantDataSummary += `Class Snapshot:\n${snapshot}\nStudents needing attention: ${attentionStudents || 'None'}\n`;
                  // Add sample data for a few students in the class
                  const classInfo = classes[classSelect.value];
-                 relevantDataSummary += `Sample student data (up to 5 in class):\n` + mockStudents
+                 relevantDataSummary += `Sample student data (up to 5 in class):\n` + getCurrentStudents()
                     .filter(s => s.yearGroup === classInfo?.yearGroup) // Corrected this line
                     .slice(0, 5)
                     .map(s => `- ${s.firstName} ${s.lastName}: Year ${s.yearGroup}, Avg Homework ${(s.engagement.homeworkCompletion*100).toFixed(0)}%`)
@@ -740,7 +823,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  // Add sample trend data for a few subjects
                  relevantDataSummary += `Sample subject trend data (up to 5):\n` + Object.entries(subjectTrends || {}) // Assuming subjectTrends is accessible or recalculated
                     .slice(0, 5)
-                     .map(([name, data]) => `- ${name}: AvgAlps ${data.avgAlps?.toFixed(1)}, Trend ${data.trend?.toFixed(1)}`)
+                     .map(([name, data]) => `- ${name}: AvgAlpha ${data.avgAlps?.toFixed(1)}, Trend ${data.trend?.toFixed(1)}`)
                      .join('\n');
             }
 
